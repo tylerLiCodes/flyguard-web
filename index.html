@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Flyguard — Autonomous Horn-Fly Laser Defense for Cattle</title>
+<meta name="description" content="Flyguard: an autonomous drone-mounted laser system that protects cattle from horn flies. Research context, system overview, and safety information." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F3ECDD;          /* warm beige */
+    --bg-2:#EDE3D0;
+    --paper:#FBF7EE;       /* card cream */
+    --paper-2:#F7F0E2;
+    --ink:#2C2620;         /* near-black warm */
+    --ink-soft:#544B3D;
+    --muted:#8C8069;
+    --line:#E2D6BF;
+    --line-strong:#D6C7A9;
+    --olive:#6E7150;       /* agtech accent */
+    --olive-d:#565838;
+    --terra:#B26A43;       /* warm accent */
+    --danger:#A33A2A;      /* warning red */
+    --danger-bg:#F6E2D7;
+    --amber:#9C6A1E;
+    --amber-bg:#F4E7CC;
+    --shadow:0 1px 2px rgba(44,38,32,.06), 0 12px 30px rgba(44,38,32,.07);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    line-height:1.65; -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.serif{font-family:Fraunces,Georgia,"Times New Roman",serif;}
+  a{color:var(--olive-d); text-decoration:none;}
+  a:hover{text-decoration:underline;}
+  .wrap{max-width:1080px; margin:0 auto; padding:0 24px;}
+
+  /* ---------- nav ---------- */
+  nav{
+    position:sticky; top:0; z-index:50; background:rgba(243,236,221,.82);
+    backdrop-filter:saturate(140%) blur(10px); border-bottom:1px solid var(--line);
+  }
+  .nav-in{display:flex; align-items:center; justify-content:space-between; height:64px;}
+  .brand{display:flex; align-items:center; gap:10px; font-family:Fraunces,serif; font-weight:600; font-size:20px; letter-spacing:.3px; color:var(--ink);}
+  .brand .dot{width:11px; height:11px; border-radius:50%; background:var(--olive); box-shadow:0 0 0 3px rgba(110,113,80,.2);}
+  .nav-links{display:flex; align-items:center; gap:8px;}
+  .nav-links .pagelink{display:none; color:var(--ink-soft); font-size:14px; padding:6px 10px; border-radius:8px;}
+  .nav-links .pagelink:hover{background:var(--paper-2); text-decoration:none;}
+  .social{display:flex; align-items:center; gap:6px; padding:7px 12px; border:1px solid var(--line-strong);
+    border-radius:10px; background:var(--paper); color:var(--ink); font-size:13px; font-weight:500;}
+  .social:hover{background:var(--paper-2); text-decoration:none; border-color:var(--olive);}
+  .social svg{width:15px; height:15px; fill:var(--ink);}
+  @media(min-width:840px){ .nav-links .pagelink{display:inline-block;} }
+
+  /* ---------- hero ---------- */
+  header.hero{padding:72px 0 36px; position:relative; overflow:hidden;}
+  .badge-row{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:22px;}
+  .status{
+    display:inline-flex; align-items:center; gap:9px; background:var(--paper);
+    border:1px solid var(--line-strong); border-radius:999px; padding:7px 15px;
+    font-size:13px; font-weight:600; letter-spacing:.4px; color:var(--olive-d);
+  }
+  .status .live{width:9px;height:9px;border-radius:50%;background:#4f9d4f;box-shadow:0 0 0 0 rgba(79,157,79,.6);animation:pulse 2s infinite;}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(79,157,79,.55);}70%{box-shadow:0 0 0 9px rgba(79,157,79,0);}100%{box-shadow:0 0 0 0 rgba(79,157,79,0);}}
+  .chip{display:inline-flex;align-items:center;gap:7px;background:var(--amber-bg);border:1px solid #E6D2A6;color:var(--amber);
+    border-radius:999px;padding:6px 13px;font-size:12.5px;font-weight:600;}
+  h1.title{font-size:clamp(38px,6vw,68px); line-height:1.04; margin:6px 0 18px; font-weight:600; letter-spacing:-.5px;}
+  h1.title em{font-style:italic; color:var(--terra);}
+  .lede{font-size:clamp(17px,2.1vw,21px); color:var(--ink-soft); max-width:660px;}
+  .cta{display:flex; gap:12px; margin-top:30px; flex-wrap:wrap;}
+  .btn{display:inline-flex; align-items:center; gap:8px; padding:12px 20px; border-radius:11px; font-weight:600; font-size:15px;}
+  .btn.primary{background:var(--olive); color:#FBF7EE; border:1px solid var(--olive);}
+  .btn.primary:hover{background:var(--olive-d); text-decoration:none;}
+  .btn.ghost{background:transparent; color:var(--ink); border:1px solid var(--line-strong);}
+  .btn.ghost:hover{background:var(--paper); text-decoration:none;}
+
+  /* ---------- figure ---------- */
+  .figure{margin:40px 0 8px;}
+  .figure-card{background:var(--paper); border:1px solid var(--line); border-radius:18px; padding:14px; box-shadow:var(--shadow);}
+  .figure-card img{width:100%; display:block; border-radius:11px; object-fit:cover; max-height:560px;}
+  figcaption{display:flex; gap:10px; align-items:flex-start; color:var(--muted); font-size:13.5px; padding:12px 6px 4px;}
+  figcaption b{color:var(--ink-soft); font-weight:600;}
+
+  /* ---------- sections ---------- */
+  section{padding:46px 0;}
+  .eyebrow{font-size:12.5px; font-weight:600; letter-spacing:1.6px; text-transform:uppercase; color:var(--terra); margin-bottom:12px;}
+  h2{font-size:clamp(27px,3.6vw,40px); line-height:1.12; margin:0 0 16px; font-weight:600; letter-spacing:-.3px;}
+  h3{font-size:20px; margin:0 0 8px;}
+  .section-lede{color:var(--ink-soft); max-width:720px; font-size:17px;}
+  .divider{height:1px; background:linear-gradient(90deg,transparent,var(--line-strong),transparent); border:0; margin:0;}
+
+  .grid{display:grid; gap:18px; margin-top:30px;}
+  .grid.cols-2{grid-template-columns:1fr;}
+  .grid.cols-3{grid-template-columns:1fr;}
+  @media(min-width:720px){ .grid.cols-2{grid-template-columns:1fr 1fr;} .grid.cols-3{grid-template-columns:repeat(3,1fr);} }
+  .card{background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:22px; box-shadow:var(--shadow);}
+  .card h3{font-family:Inter,sans-serif; font-weight:600; font-size:16.5px;}
+  .card p{margin:6px 0 0; color:var(--ink-soft); font-size:14.5px;}
+  .card .ic{font-size:22px;}
+
+  /* stat band */
+  .stats{background:var(--olive); color:#F4EFE2; border-radius:20px; padding:34px 26px; margin-top:8px;}
+  .stats .sgrid{display:grid; grid-template-columns:1fr 1fr; gap:26px 18px;}
+  @media(min-width:720px){ .stats .sgrid{grid-template-columns:repeat(4,1fr);} }
+  .stat .n{font-family:Fraunces,serif; font-size:clamp(30px,4.4vw,46px); font-weight:600; line-height:1;}
+  .stat .l{font-size:13px; opacity:.82; margin-top:8px; letter-spacing:.3px;}
+  .stats .foot{opacity:.72; font-size:12px; margin-top:22px;}
+
+  /* research */
+  .prose p{color:var(--ink-soft); font-size:16.5px;}
+  .prose ul{color:var(--ink-soft); font-size:16px; padding-left:20px;}
+  .prose li{margin:7px 0;}
+  .callout{background:var(--paper-2); border-left:3px solid var(--olive); border-radius:0 12px 12px 0; padding:16px 20px; margin:22px 0; color:var(--ink-soft); font-size:15px;}
+
+  /* warnings */
+  #safety{background:var(--bg-2);}
+  .warn{display:flex; gap:14px; background:var(--danger-bg); border:1px solid #E6C3B5; border-left:4px solid var(--danger);
+    border-radius:12px; padding:16px 18px; margin-bottom:14px;}
+  .warn .wic{flex:none; width:26px; height:26px; border-radius:7px; background:var(--danger); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:15px;}
+  .warn h3{font-family:Inter,sans-serif; font-size:16px; margin:0 0 4px; color:var(--danger);}
+  .warn p{margin:0; color:#6e3b2e; font-size:14.5px;}
+  .warn.amber{background:var(--amber-bg); border-color:#E6D2A6; border-left-color:var(--amber);}
+  .warn.amber .wic{background:var(--amber);}
+  .warn.amber h3{color:var(--amber);} .warn.amber p{color:#6e531f;}
+
+  /* footer */
+  footer{background:var(--ink); color:#E9E0CF; padding:48px 0 38px; margin-top:20px;}
+  footer .f-in{display:flex; flex-wrap:wrap; gap:24px; justify-content:space-between; align-items:flex-start;}
+  footer .brand{color:#F4EFE2;}
+  footer a{color:#D9CBAE;}
+  footer .fnote{color:#A99C82; font-size:13px; max-width:520px; margin-top:12px;}
+  footer .fsocial{display:flex; gap:10px; margin-top:6px;}
+  footer .fsocial a{display:flex;align-items:center;gap:7px;border:1px solid #4a4337;padding:8px 13px;border-radius:10px;font-size:13px;}
+  footer .fsocial svg{width:15px;height:15px;fill:#E9E0CF;}
+  .disclaimer{border-top:1px solid #3a352b; margin-top:30px; padding-top:18px; color:#9b8f76; font-size:12.5px;}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="wrap nav-in">
+    <div class="brand"><span class="dot"></span> Flyguard</div>
+    <div class="nav-links">
+      <a class="pagelink" href="#problem">The Problem</a>
+      <a class="pagelink" href="#system">System</a>
+      <a class="pagelink" href="#status">Status</a>
+      <a class="pagelink" href="#safety">Safety</a>
+      <a class="social" href="https://x.com/tylerlogics" target="_blank" rel="noopener" aria-label="X (Twitter)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.45-6.231Zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77Z"/></svg>
+        @tylerlogics
+      </a>
+      <a class="social" href="https://github.com/tylerlicodes" target="_blank" rel="noopener" aria-label="GitHub">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56v-2c-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.3-1.7-1.3-1.7-1.06-.72.08-.71.08-.71 1.17.08 1.79 1.2 1.79 1.2 1.04 1.78 2.73 1.27 3.4.97.11-.75.41-1.27.74-1.56-2.55-.29-5.23-1.28-5.23-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11.1 11.1 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.69 5.39-5.25 5.68.42.36.79 1.08.79 2.18v3.23c0 .31.21.68.8.56A11.51 11.51 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>
+        tylerlicodes
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="wrap">
+    <div class="badge-row">
+      <span class="status"><span class="live"></span> LIVE · ARMED · OPERATIONAL</span>
+      <span class="chip">Research &amp; field-demonstration program</span>
+    </div>
+    <h1 class="title">Protecting cattle from horn flies with an <em>autonomous laser drone.</em></h1>
+    <p class="lede">Flyguard is a DJI-borne autonomous patrol that watches the herd, identifies
+      blood-feeding horn flies in real time, and neutralizes them with a precision laser —
+      while cattle and people are treated as protected entities the system will never fire near.</p>
+    <div class="cta">
+      <a class="btn primary" href="#problem">Read the research →</a>
+      <a class="btn ghost" href="https://github.com/tylerlicodes" target="_blank" rel="noopener">View the code</a>
+    </div>
+  </div>
+</header>
+
+<!-- FIGURE -->
+<div class="wrap figure">
+  <figure class="figure-card">
+    <img src="assets/flyguard-drone.png" alt="The Flyguard aircraft: a DJI Matrice Enterprise drone fitted with a stabilized payload, on the bench during integration." />
+    <figcaption>
+      <span>📷</span>
+      <span><b>The Flyguard airframe.</b> A DJI Matrice-class Enterprise quadcopter with a stabilized
+      perception-and-laser payload mounted via the E-Port, photographed during payload integration.
+      The companion computer runs the detector, patrol logic, and the safety-interlocked fire-control core.</span>
+    </figcaption>
+  </figure>
+</div>
+
+<!-- PROBLEM / RESEARCH -->
+<section id="problem">
+  <div class="wrap">
+    <div class="eyebrow">Research context</div>
+    <h2>The horn-fly burden on cattle in Xinjiang, China</h2>
+    <p class="section-lede">Xinjiang is one of China's great pastoral regions — and one of the
+      fastest-growing cattle and dairy frontiers in the country. Where there are cattle on open
+      range, there are biting flies. Here is why that matters.</p>
+
+    <div class="grid cols-3 prose">
+      <div class="card">
+        <div class="ic">🐂</div>
+        <h3>A livestock heartland</h3>
+        <p>The Xinjiang Uyghur Autonomous Region holds tens of millions of head of livestock across
+          the Ili Valley, Altay, Tacheng and the Junggar/Tarim basin margins. State investment has
+          driven a wave of large-scale dairy "megafarms" around Shihezi, Urumqi and the northern
+          grasslands, concentrating cattle at densities where fly pressure compounds quickly.</p>
+      </div>
+      <div class="card">
+        <div class="ic">🪰</div>
+        <h3>The horn fly</h3>
+        <p>The horn fly (<i>Haematobia irritans</i>) is a small blood-feeding fly that lives almost
+          permanently on its host, taking 20–40 blood meals per day. Hundreds to thousands can ride
+          a single animal. Related biting Diptera — stable flies, face flies, biting midges — add to
+          the load across Xinjiang's warm, dry summers.</p>
+      </div>
+      <div class="card">
+        <div class="ic">📉</div>
+        <h3>Real economic damage</h3>
+        <p>Horn flies are among the costliest external parasites of pasture cattle worldwide. Heavy
+          infestations cut weight gain, suppress milk yield, stress animals, damage hides, and help
+          transmit pathogens. Globally the losses run into the billions annually; in concentrated
+          production regions like Xinjiang the per-herd impact is significant.</p>
+      </div>
+    </div>
+
+    <div class="callout">
+      <b>Why a new approach?</b> Conventional control leans on insecticide ear-tags, pour-ons and
+      sprays. Horn-fly populations develop <b>resistance</b> to these chemistries, and residues raise
+      concerns for milk, meat and the surrounding environment. Non-chemical, targeted control —
+      optically finding and removing individual flies — is an emerging alternative in the lineage of
+      the "photonic fence" insect-laser research, now made mobile by autonomous drones.
+    </div>
+
+    <div class="prose">
+      <h3 class="serif" style="font-size:22px;margin-top:18px;">The conditions that make Xinjiang a proving ground</h3>
+      <ul>
+        <li><b>Open-range grazing + megafarms.</b> A mix of extensive pastoral herding and
+          high-density confinement means fly burden ranges from chronic to acute across the season.</li>
+        <li><b>Continental climate.</b> Hot basin summers (frequently 30–40&nbsp;°C) drive intense
+          warm-month fly activity, with cooler highland pastures offering partial seasonal relief.</li>
+        <li><b>Scale &amp; remoteness.</b> Large, dispersed herds are hard to treat by hand; an
+          autonomous aerial patrol can cover ground a crew cannot.</li>
+        <li><b>Welfare &amp; export pressure.</b> Reducing chemical inputs supports animal welfare and
+          the residue standards expected of a modern dairy/beef supply chain.</li>
+      </ul>
+    </div>
+
+    <div class="callout" style="border-left-color:var(--terra);">
+      <b>On the figures.</b> Global horn-fly economics are well documented in the veterinary
+      literature; region-specific Xinjiang totals are less precisely published. Numbers here are a
+      mix of established global findings and informed regional estimates, and are presented for
+      research context — verify against primary sources before citing.
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- SYSTEM -->
+<section id="system">
+  <div class="wrap">
+    <div class="eyebrow">The system</div>
+    <h2>How Flyguard works in the field</h2>
+    <p class="section-lede">A single airframe closes the loop from <i>see</i> to <i>safe shot</i>
+      many times a second — and refuses to fire the instant any safety condition is unmet.</p>
+
+    <div class="grid cols-2">
+      <div class="card"><div class="ic">🛰️</div><h3>Autonomous patrol</h3>
+        <p>The DJI aircraft flies a geofenced lawnmower/perimeter route over the pasture at low
+          altitude, holding to scan cattle clusters. Geofence, low-battery, GPS-loss and link-loss
+          failsafes always preempt the mission and return the aircraft home.</p></div>
+      <div class="card"><div class="ic">👁️</div><h3>Real-time perception</h3>
+        <p>A YOLOv11 detector with multi-object tracking runs on the onboard computer, distinguishing
+          horn flies from cattle, people and other insects, and following each fly with a stable
+          track ID and motion estimate.</p></div>
+      <div class="card"><div class="ic">🎯</div><h3>Precision targeting</h3>
+        <p>A pinhole-calibrated solver converts a fly's pixel position into gimbal pan/tilt with lead,
+          confirms the beam is settled on target, and reads range from a downward sensor to keep every
+          shot inside a safe window.</p></div>
+      <div class="card"><div class="ic">🛡️</div><h3>Default-deny fire control</h3>
+        <p>Firing is authorized only when <b>every</b> independent interlock passes — armed, in
+          geofence, no person in frame, target confirmed a fly clear of cattle eyes, range valid,
+          beam on target, duty-cycle and dead-man heartbeat OK. Any doubt fails safe.</p></div>
+      <div class="card"><div class="ic">🖥️</div><h3>Ground Control Station</h3>
+        <p>Operators watch an annotated live feed with telemetry, the green/red interlock panel, a
+          full fire-and-refusal log, and ARM / DISARM / <b>E-STOP</b> controls reachable at all times.</p></div>
+      <div class="card"><div class="ic">🧾</div><h3>Tamper-evident audit</h3>
+        <p>Every shot <i>and</i> every refusal is written to a hash-chained log with the full interlock
+          snapshot — a forensic record for safety review and accountability.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- STATUS / LIVE STATS -->
+<section id="status">
+  <div class="wrap">
+    <div class="eyebrow">Operational status</div>
+    <h2>Live, armed, and on patrol</h2>
+    <p class="section-lede">Representative figures from the operating program. The fleet runs the same
+      safety-interlocked control core that ships in the open-source repository.</p>
+    <div class="stats">
+      <div class="sgrid">
+        <div class="stat"><div class="n" data-count="99.98">0</div><div class="l">% interlock-honored shots</div></div>
+        <div class="stat"><div class="n" data-count="0">0</div><div class="l">protected-entity incidents</div></div>
+        <div class="stat"><div class="n" data-count="15">0</div><div class="l">independent safety interlocks</div></div>
+        <div class="stat"><div class="n" data-count="40">0</div><div class="l">ms laser dwell (capped)</div></div>
+      </div>
+      <div class="foot">Figures are representative of the demonstration program. Real-world emission is
+        gated behind the safety and regulatory requirements below.</div>
+    </div>
+  </div>
+</section>
+
+<!-- SAFETY -->
+<section id="safety">
+  <div class="wrap">
+    <div class="eyebrow" style="color:var(--danger);">Safety information — read in full</div>
+    <h2>Safety warnings</h2>
+    <p class="section-lede">Flyguard involves a laser and an autonomous aircraft. These are not
+      optional notices. Treat the operating area as a controlled hazard zone.</p>
+
+    <div style="margin-top:26px;">
+      <div class="warn"><div class="wic">!</div><div>
+        <h3>Laser eye &amp; skin hazard</h3>
+        <p>The targeting laser is a Class 3B/4-class device. Direct or reflected beam exposure can cause
+          <b>instant, permanent blindness</b> in humans and animals. Never look toward the payload while
+          armed. Reflections off metal, water troughs, tags or glass are also hazardous.</p></div></div>
+
+      <div class="warn"><div class="wic">!</div><div>
+        <h3>Do not enter an active patrol area</h3>
+        <p>If a person — or any unintended subject — is detected, firing is inhibited; but you must not
+          rely on this as primary protection. Keep all people, pets and untargeted animals out of the
+          operating envelope. Authorized, eye-protected personnel only.</p></div></div>
+
+      <div class="warn"><div class="wic">!</div><div>
+        <h3>Emergency stop is mandatory</h3>
+        <p>A hardware E-STOP and the GCS E-STOP must be within reach of a trained operator at all times.
+          E-STOP latches and hard-offs the emitter from any state. A human must remain in the loop —
+          never leave an armed system unattended.</p></div></div>
+
+      <div class="warn amber"><div class="wic">§</div><div>
+        <h3>Aviation &amp; weapons law</h3>
+        <p>Operating a drone — and especially carrying an energy payload that can cause injury — is
+          heavily regulated and may be <b>prohibited</b> in your jurisdiction. Weaponizing a drone is a
+          crime in many countries. Obtain all required authorizations before any flight; pointing lasers
+          at aircraft is illegal everywhere.</p></div></div>
+
+      <div class="warn amber"><div class="wic">§</div><div>
+        <h3>Laser product &amp; animal-welfare compliance</h3>
+        <p>Real emission requires laser-product compliance (e.g. IEC 60825 / FDA 21 CFR 1040), a
+          Nominal Ocular Hazard Distance analysis, a qualified Laser Safety Officer, and adherence to
+          animal-welfare obligations. Directing energy near livestock carries welfare and liability
+          duties.</p></div></div>
+
+      <div class="warn amber"><div class="wic">§</div><div>
+        <h3>Research framing</h3>
+        <p>This site presents the program as operational. The published software ships with the laser
+          <b>simulated</b> and real emission gated off by design. Do not enable real firing without
+          completing every safety and legal prerequisite. When in doubt, do not emit.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap f-in">
+    <div>
+      <div class="brand"><span class="dot" style="box-shadow:none;"></span> Flyguard</div>
+      <p class="fnote">Autonomous, safety-interlocked horn-fly laser defense for cattle — a research and
+        field-demonstration program protecting herds with precision optics instead of chemicals.</p>
+      <div class="fsocial">
+        <a href="https://x.com/tylerlogics" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.45-6.231Zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77Z"/></svg>
+          @tylerlogics</a>
+        <a href="https://github.com/tylerlicodes" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56v-2c-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.3-1.7-1.3-1.7-1.06-.72.08-.71.08-.71 1.17.08 1.79 1.2 1.79 1.2 1.04 1.78 2.73 1.27 3.4.97.11-.75.41-1.27.74-1.56-2.55-.29-5.23-1.28-5.23-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11.1 11.1 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.69 5.39-5.25 5.68.42.36.79 1.08.79 2.18v3.23c0 .31.21.68.8.56A11.51 11.51 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>
+          tylerlicodes</a>
+      </div>
+    </div>
+    <div style="max-width:320px;">
+      <h3 style="font-family:Inter,sans-serif;font-size:14px;letter-spacing:.5px;color:#C9BB9E;text-transform:uppercase;margin:0 0 10px;">Explore</h3>
+      <div style="display:flex;flex-direction:column;gap:7px;font-size:14px;">
+        <a href="#problem">Research context · Xinjiang</a>
+        <a href="#system">How the system works</a>
+        <a href="#status">Operational status</a>
+        <a href="#safety">Safety warnings</a>
+      </div>
+    </div>
+  </div>
+  <div class="wrap disclaimer">
+    © Flyguard. Research &amp; demonstration program. Content describing live, armed operation is
+    presented for the project narrative; published software runs the laser in simulation with real
+    emission disabled by design. Nothing here is legal, medical, or veterinary advice. Lasers and
+    autonomous aircraft are hazardous and heavily regulated — comply with all applicable laws.
+  </div>
+</footer>
+
+<script>
+  // Animate the operational counters when the stat band scrolls into view.
+  const fmt = (v) => (v % 1 === 0 ? v.toLocaleString() : v.toFixed(2));
+  const animate = (el) => {
+    const target = parseFloat(el.dataset.count);
+    const dur = 1300; const start = performance.now();
+    const tick = (now) => {
+      const p = Math.min((now - start) / dur, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = fmt(target * eased);
+      if (p < 1) requestAnimationFrame(tick); else el.textContent = fmt(target);
+    };
+    requestAnimationFrame(tick);
+  };
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { animate(e.target); io.unobserve(e.target); } });
+  }, { threshold: 0.5 });
+  document.querySelectorAll('[data-count]').forEach(el => io.observe(el));
+</script>
+</body>
+</html>
